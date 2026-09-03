@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Live Camera</title>
+
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
+  <style>
+    body {
+      margin: 0;
+      background: #111;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+
+    h1 {
+      margin-top: 25px;
+    }
+
+    button {
+      padding: 14px 20px;
+      margin: 8px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+
+    #reader {
+      width: 300px;
+      max-width: 90%;
+      margin: 20px auto;
+    }
+
+    #qrcode {
+      background: white;
+      padding: 15px;
+      width: 220px;
+      margin: 20px auto;
+    }
+
+    video {
+      width: 95%;
+      max-width: 600px;
+      border-radius: 15px;
+      background: black;
+      margin-top: 15px;
+    }
+
+    #status {
+      margin: 15px;
+      font-size: 17px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>📷 Live Camera</h1>
+
+  <button onclick="cameraMode()">
+    📷 Camera Mode
+  </button>
+
+  <button onclick="startScanner()">
+    📱 Scan QR
+  </button>
+
+  <div id="status">
+    Ready
+  </div>
+
+  <div id="qrcode"></div>
+
+  <div id="reader"></div>
+
+  <video id="localVideo" autoplay playsinline muted></video>
+
+  <script>
+
+    let localStream = null;
+
+    function createCode() {
+
+      return Math.random()
+        .toString(36)
+        .substring(2, 8)
+        .toUpperCase();
+
+    }
+
+    async function cameraMode() {
+
+      try {
+
+        localStream =
+          await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: false
+          });
+
+        document.getElementById("localVideo")
+          .srcObject = localStream;
+
+        const roomCode = createCode();
+
+        document.getElementById("status").innerHTML =
+          "✅ Camera चालू है";
+
+        document.getElementById("qrcode").innerHTML = "";
+
+        new QRCode(
+          document.getElementById("qrcode"),
+          {
+            text: roomCode,
+            width: 200,
+            height: 200
+          }
+        );
+
+      } catch (error) {
+
+        document.getElementById("status").innerHTML =
+          "❌ Camera permission नहीं मिली";
+
+      }
+
+    }
+
+    function startScanner() {
+
+      document.getElementById("status").innerHTML =
+        "📱 QR Code scan करें";
+
+      const scanner =
+        new Html5Qrcode("reader");
+
+      scanner.start(
+        { facingMode: "environment" },
+        {
+          fps: 10,
+          qrbox: 250
+        },
+        (decodedText) => {
+
+          document.getElementById("status").innerHTML =
+            "✅ QR मिला: " + decodedText;
+
+          scanner.stop();
+
+        },
+        (errorMessage) => {
+
+          // Scanning जारी है
+
+        }
+      ).catch(() => {
+
+        document.getElementById("status").innerHTML =
+          "❌ Scanner camera शुरू नहीं हुआ";
+
+      });
+
+    }
+
+  </script>
+
+</body>
+</html>
