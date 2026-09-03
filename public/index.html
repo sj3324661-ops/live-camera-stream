@@ -3,7 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Live Camera</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#111111">
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://unpkg.com/html5-qrcode"></script>
@@ -17,7 +22,9 @@
       text-align: center;
     }
 
-    h1 { margin: 20px 0; }
+    h1 {
+      margin: 20px 0;
+    }
 
     button {
       padding: 13px 18px;
@@ -54,11 +61,6 @@
       border: 1px solid #444;
       border-radius: 15px;
     }
-
-    #status {
-      margin: 15px;
-      color: #00ff88;
-    }
   </style>
 </head>
 
@@ -70,15 +72,28 @@
 
   <h2>Camera Phone</h2>
 
-  <button onclick="startCamera()">📷 Start Camera</button>
+  <button onclick="startCamera()">
+    📷 Start Camera
+  </button>
 
-  <button onclick="switchCamera()">🔄 Front / Back</button>
+  <button onclick="switchCamera()">
+    🔄 Front / Back
+  </button>
 
-  <button onclick="stopCamera()">⛔ Stop</button>
+  <button onclick="stopCamera()">
+    ⛔ Stop
+  </button>
 
-  <p id="cameraStatus">Camera बंद है</p>
+  <p id="cameraStatus">
+    Camera बंद है
+  </p>
 
-  <video id="localVideo" autoplay playsinline muted></video>
+  <video
+    id="localVideo"
+    autoplay
+    playsinline
+    muted>
+  </video>
 
   <div id="qrcode"></div>
 
@@ -86,11 +101,14 @@
 
 </div>
 
+
 <div class="box">
 
   <h2>Viewer Phone</h2>
 
-  <button onclick="startScanner()">📱 Scan QR</button>
+  <button onclick="startScanner()">
+    📱 Scan QR
+  </button>
 
   <div id="scanner"></div>
 
@@ -98,9 +116,15 @@
     QR scan करके camera से connect करें
   </p>
 
-  <video id="remoteVideo" autoplay playsinline controls></video>
+  <video
+    id="remoteVideo"
+    autoplay
+    playsinline
+    controls>
+  </video>
 
 </div>
+
 
 <script src="/socket.io/socket.io.js"></script>
 
@@ -119,6 +143,7 @@ const localVideo =
 
 const remoteVideo =
   document.getElementById("remoteVideo");
+
 
 const configuration = {
 
@@ -276,6 +301,7 @@ function createPeerConnection() {
       configuration
     );
 
+
   if (localStream) {
 
     localStream
@@ -290,6 +316,7 @@ function createPeerConnection() {
       });
 
   }
+
 
   peerConnection.onicecandidate =
     event => {
@@ -445,6 +472,7 @@ function startScanner() {
       "scanner"
     );
 
+
   scanner.start(
 
     {
@@ -469,6 +497,7 @@ function startScanner() {
             "room"
           );
 
+
         if (!scannedRoom) {
 
           alert("गलत QR Code");
@@ -477,18 +506,22 @@ function startScanner() {
 
         }
 
+
         roomId =
           scannedRoom;
+
 
         document.getElementById(
           "viewerStatus"
         ).innerText =
           "🔗 Camera से connect हो रहा है...";
 
+
         socket.emit(
           "join-room",
           roomId
         );
+
 
         await scanner.stop();
 
@@ -552,4 +585,4 @@ if (autoRoom) {
 </script>
 
 </body>
-  </html>
+    </html>
