@@ -4,129 +4,664 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Live Camera</title>
+  <title>Live Camera — Internet Camera Streaming</title>
 
-  <!-- PWA -->
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#111111">
+  <meta name="theme-color" content="#0b0f19">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
 
+  <!-- QR Code -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <!-- QR Scanner -->
   <script src="https://unpkg.com/html5-qrcode"></script>
 
   <style>
-    body {
+    * {
+      box-sizing: border-box;
       margin: 0;
+      padding: 0;
+    }
+
+    body {
       font-family: Arial, sans-serif;
-      background: #111;
-      color: white;
+      background:
+        radial-gradient(circle at top, #18243d 0%, #0b0f19 45%, #05070c 100%);
+      color: #fff;
+      min-height: 100vh;
+    }
+
+    /* HEADER */
+
+    header {
+      padding: 18px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      background: rgba(10,14,24,0.85);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .header-inner {
+      max-width: 900px;
+      margin: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo {
+      width: 45px;
+      height: 45px;
+      border-radius: 13px;
+      object-fit: cover;
+      background: #151b2b;
+    }
+
+    .brand-title {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .brand-subtitle {
+      font-size: 12px;
+      color: #8e99ad;
+      margin-top: 3px;
+    }
+
+    .online-badge {
+      padding: 7px 11px;
+      border-radius: 20px;
+      background: rgba(30, 220, 120, 0.12);
+      color: #35e58c;
+      font-size: 12px;
+      border: 1px solid rgba(53,229,140,0.2);
+    }
+
+    /* MAIN */
+
+    main {
+      width: 100%;
+      max-width: 900px;
+      margin: auto;
+      padding: 25px 15px 50px;
+    }
+
+    .hero {
       text-align: center;
+      margin-bottom: 25px;
     }
 
-    h1 {
-      margin: 20px 0;
+    .hero h1 {
+      font-size: 31px;
+      margin-bottom: 8px;
     }
 
-    button {
-      padding: 13px 18px;
-      margin: 6px;
-      border: 0;
-      border-radius: 10px;
-      font-size: 16px;
+    .hero p {
+      color: #9ca7bb;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* CARDS */
+
+    .card {
+      background: rgba(20, 27, 42, 0.86);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 22px;
+      padding: 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-title-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #202a40;
+      font-size: 20px;
+    }
+
+    .card-title h2 {
+      font-size: 18px;
+    }
+
+    .card-title p {
+      font-size: 12px;
+      color: #8d98ad;
+      margin-top: 3px;
+    }
+
+    /* VIDEO */
+
+    .video-container {
+      width: 100%;
+      background: #05070b;
+      border-radius: 17px;
+      overflow: hidden;
+      position: relative;
+      border: 1px solid rgba(255,255,255,0.08);
     }
 
     video {
-      width: 92%;
-      max-width: 600px;
-      background: black;
-      border-radius: 12px;
+      width: 100%;
+      max-height: 500px;
+      display: block;
+      background: #05070b;
+      object-fit: cover;
+    }
+
+    .video-label {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      padding: 7px 10px;
+      border-radius: 8px;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(5px);
+      font-size: 12px;
+      z-index: 2;
+    }
+
+    /* BUTTONS */
+
+    .buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
       margin-top: 15px;
+    }
+
+    button {
+      border: none;
+      outline: none;
+      padding: 14px 12px;
+      border-radius: 13px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      color: white;
+      background: #252f45;
+      transition: 0.2s;
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #246bfe, #5748ff);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #12a96d, #18c982);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #e73838, #ff5757);
+    }
+
+    .btn-secondary {
+      background: #252f45;
+    }
+
+    .full-btn {
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    /* STATUS */
+
+    .status {
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 11px;
+      background: rgba(255,255,255,0.04);
+      color: #aeb8ca;
+      font-size: 13px;
+      text-align: center;
+    }
+
+    /* QR */
+
+    .qr-section {
+      margin-top: 18px;
+      text-align: center;
+      padding: 18px;
+      border-radius: 15px;
+      background: rgba(255,255,255,0.035);
     }
 
     #qrcode {
       background: white;
-      padding: 15px;
-      width: 220px;
-      margin: 20px auto;
+      padding: 12px;
+      width: 244px;
+      min-height: 244px;
+      margin: 15px auto;
+      border-radius: 14px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
+
+    #qrcode img {
+      max-width: 220px;
+    }
+
+    .room-text {
+      color: #9ba6b9;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    /* SCANNER */
 
     #scanner {
-      width: 95%;
+      width: 100%;
       max-width: 500px;
-      margin: 20px auto;
+      margin: 15px auto;
+      overflow: hidden;
+      border-radius: 15px;
     }
 
-    .box {
-      margin: 15px;
-      padding: 15px;
-      border: 1px solid #444;
-      border-radius: 15px;
+    #scanner video {
+      max-height: 400px;
+    }
+
+    /* STEPS */
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .step {
+      background: rgba(255,255,255,0.035);
+      padding: 14px 8px;
+      border-radius: 13px;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .step-number {
+      width: 28px;
+      height: 28px;
+      margin: auto auto 8px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #27334c;
+      font-size: 12px;
+    }
+
+    .step p {
+      font-size: 11px;
+      color: #929db0;
+      line-height: 1.4;
+    }
+
+    /* FOOTER */
+
+    footer {
+      text-align: center;
+      padding: 25px 15px;
+      color: #6f7a8e;
+      font-size: 12px;
+    }
+
+    /* MOBILE */
+
+    @media (max-width: 600px) {
+
+      main {
+        padding: 20px 12px 40px;
+      }
+
+      .hero h1 {
+        font-size: 27px;
+      }
+
+      .card {
+        padding: 15px;
+        border-radius: 18px;
+      }
+
+      .buttons {
+        grid-template-columns: 1fr;
+      }
+
+      .steps {
+        grid-template-columns: 1fr;
+      }
+
+      .online-badge {
+        display: none;
+      }
     }
   </style>
 </head>
 
 <body>
 
-<h1>📷 Live Camera</h1>
+<!-- HEADER -->
 
-<div class="box">
+<header>
+  <div class="header-inner">
 
-  <h2>Camera Phone</h2>
+    <div class="logo-area">
 
-  <button onclick="startCamera()">
-    📷 Start Camera
-  </button>
+      <img
+        class="logo"
+        src="/icon-192.png"
+        alt="Live Camera"
+        onerror="this.style.display='none'"
+      >
 
-  <button onclick="switchCamera()">
-    🔄 Front / Back
-  </button>
+      <div>
+        <div class="brand-title">📷 Live Camera</div>
+        <div class="brand-subtitle">Internet Camera Streaming</div>
+      </div>
 
-  <button onclick="stopCamera()">
-    ⛔ Stop
-  </button>
+    </div>
 
-  <p id="cameraStatus">
-    Camera बंद है
-  </p>
+    <div class="online-badge">
+      ● Online
+    </div>
 
-  <video
-    id="localVideo"
-    autoplay
-    playsinline
-    muted>
-  </video>
-
-  <div id="qrcode"></div>
-
-  <p id="roomText"></p>
-
-</div>
+  </div>
+</header>
 
 
-<div class="box">
+<main>
 
-  <h2>Viewer Phone</h2>
+  <!-- HERO -->
 
-  <button onclick="startScanner()">
-    📱 Scan QR
-  </button>
+  <section class="hero">
 
-  <div id="scanner"></div>
+    <h1>Live Camera Streaming</h1>
 
-  <p id="viewerStatus">
-    QR scan करके camera से connect करें
-  </p>
+    <p>
+      एक फोन का कैमरा दूसरे फोन पर Internet के जरिए Live देखें।
+    </p>
 
-  <video
-    id="remoteVideo"
-    autoplay
-    playsinline
-    controls>
-  </video>
+  </section>
 
-</div>
 
+  <!-- CAMERA PHONE -->
+
+  <section class="card">
+
+    <div class="card-header">
+
+      <div class="card-title">
+
+        <div class="card-title-icon">
+          📷
+        </div>
+
+        <div>
+          <h2>Camera Phone</h2>
+          <p>इस फोन का कैमरा शेयर करें</p>
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- LOCAL VIDEO -->
+
+    <div class="video-container">
+
+      <div class="video-label">
+        📷 Your Camera
+      </div>
+
+      <video
+        id="localVideo"
+        autoplay
+        playsinline
+        muted>
+      </video>
+
+    </div>
+
+
+    <!-- BUTTONS -->
+
+    <div class="buttons">
+
+      <button
+        class="btn-primary"
+        onclick="startCamera()">
+        📷 Start Camera
+      </button>
+
+      <button
+        class="btn-secondary"
+        onclick="switchCamera()">
+        🔄 Front / Back
+      </button>
+
+    </div>
+
+    <button
+      class="btn-danger full-btn"
+      onclick="stopCamera()">
+      ⛔ Stop Camera
+    </button>
+
+
+    <div
+      id="cameraStatus"
+      class="status">
+      ⚪ Camera बंद है
+    </div>
+
+
+    <!-- QR -->
+
+    <div class="qr-section">
+
+      <h3>🔗 Connect Another Phone</h3>
+
+      <p
+        class="room-text"
+        style="margin-top:7px;">
+        नीचे दिया QR दूसरे फोन से Scan करें।
+      </p>
+
+      <div id="qrcode">
+        <span style="color:#555;font-size:12px;">
+          Camera Start करने के बाद QR यहाँ दिखाई देगा
+        </span>
+      </div>
+
+      <p
+        id="roomText"
+        class="room-text">
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <!-- VIEWER PHONE -->
+
+  <section class="card">
+
+    <div class="card-header">
+
+      <div class="card-title">
+
+        <div class="card-title-icon">
+          📱
+        </div>
+
+        <div>
+          <h2>Viewer Phone</h2>
+          <p>दूसरे फोन का Live Camera देखें</p>
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <button
+      class="btn-primary full-btn"
+      onclick="startScanner()">
+      📱 Scan QR Code
+    </button>
+
+
+    <div id="scanner"></div>
+
+
+    <div
+      id="viewerStatus"
+      class="status">
+      ⚪ QR Scan करके Camera से Connect करें
+    </div>
+
+
+    <!-- REMOTE VIDEO -->
+
+    <div
+      class="video-container"
+      style="margin-top:15px;">
+
+      <div class="video-label">
+        🔴 Live Camera
+      </div>
+
+      <video
+        id="remoteVideo"
+        autoplay
+        playsinline
+        controls>
+      </video>
+
+    </div>
+
+  </section>
+
+
+  <!-- HOW IT WORKS -->
+
+  <section class="card">
+
+    <div class="card-header">
+
+      <div class="card-title">
+
+        <div class="card-title-icon">
+          ⚡
+        </div>
+
+        <div>
+          <h2>कैसे काम करता है?</h2>
+          <p>3 आसान Steps</p>
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div class="steps">
+
+      <div class="step">
+
+        <div class="step-number">
+          1
+        </div>
+
+        <p>
+          Camera Phone में
+          Start Camera दबाएँ
+        </p>
+
+      </div>
+
+
+      <div class="step">
+
+        <div class="step-number">
+          2
+        </div>
+
+        <p>
+          दूसरे फोन से
+          QR Scan करें
+        </p>
+
+      </div>
+
+
+      <div class="step">
+
+        <div class="step-number">
+          3
+        </div>
+
+        <p>
+          Live Camera
+          देखें
+        </p>
+
+      </div>
+
+    </div>
+
+  </section>
+
+</main>
+
+
+<footer>
+
+  🔒 Camera आपकी अनुमति से ही शुरू होता है
+
+  <br><br>
+
+  Live Camera • WebRTC Streaming
+
+</footer>
+
+
+<!-- SOCKET.IO -->
 
 <script src="/socket.io/socket.io.js"></script>
+
 
 <script>
 
@@ -138,12 +673,16 @@ let roomId = null;
 
 let currentFacingMode = "environment";
 
+let scannerInstance = null;
+
 const localVideo =
   document.getElementById("localVideo");
 
 const remoteVideo =
   document.getElementById("remoteVideo");
 
+
+/* WEBRTC */
 
 const configuration = {
 
@@ -158,12 +697,15 @@ const configuration = {
 };
 
 
+/* CREATE ROOM */
+
 function createRoom() {
 
   roomId =
     Math.random()
-    .toString(36)
-    .substring(2, 10);
+      .toString(36)
+      .substring(2, 10);
+
 
   const joinUrl =
     window.location.origin +
@@ -171,7 +713,9 @@ function createRoom() {
     "?room=" +
     roomId;
 
+
   document.getElementById("qrcode").innerHTML = "";
+
 
   new QRCode(
     document.getElementById("qrcode"),
@@ -182,11 +726,14 @@ function createRoom() {
     }
   );
 
+
   document.getElementById("roomText").innerText =
-    "इस QR को दूसरे फोन से Scan करें";
+    "✅ QR तैयार है — इसे दूसरे फोन से Scan करें";
 
 }
 
+
+/* START CAMERA */
 
 async function startCamera() {
 
@@ -199,6 +746,7 @@ async function startCamera() {
         .forEach(track => track.stop());
 
     }
+
 
     localStream =
       await navigator.mediaDevices.getUserMedia({
@@ -213,26 +761,32 @@ async function startCamera() {
 
       });
 
+
     localVideo.srcObject =
       localStream;
 
+
     createRoom();
+
 
     socket.emit(
       "join-room",
       roomId
     );
 
+
     document.getElementById(
       "cameraStatus"
     ).innerText =
       "🟢 Camera चालू है — QR Scan करवाएँ";
+
 
   }
 
   catch(error) {
 
     console.log(error);
+
 
     document.getElementById(
       "cameraStatus"
@@ -244,25 +798,33 @@ async function startCamera() {
 }
 
 
+/* SWITCH CAMERA */
+
 async function switchCamera() {
 
   if (!localStream) {
 
-    alert("पहले Start Camera दबाएँ");
+    alert(
+      "पहले Start Camera दबाएँ"
+    );
 
     return;
 
   }
+
 
   currentFacingMode =
     currentFacingMode === "environment"
       ? "user"
       : "environment";
 
+
   await startCamera();
 
 }
 
+
+/* STOP CAMERA */
 
 function stopCamera() {
 
@@ -276,7 +838,9 @@ function stopCamera() {
 
   }
 
+
   localVideo.srcObject = null;
+
 
   if (peerConnection) {
 
@@ -286,13 +850,28 @@ function stopCamera() {
 
   }
 
+
   document.getElementById(
     "cameraStatus"
   ).innerText =
-    "Camera बंद है";
+    "⚪ Camera बंद है";
+
+
+  document.getElementById(
+    "roomText"
+  ).innerText =
+    "";
+
+
+  document.getElementById(
+    "qrcode"
+  ).innerHTML =
+    '<span style="color:#555;font-size:12px;">Camera Start करने के बाद QR यहाँ दिखाई देगा</span>';
 
 }
 
+
+/* CREATE PEER CONNECTION */
 
 function createPeerConnection() {
 
@@ -345,25 +924,37 @@ function createPeerConnection() {
       remoteVideo.srcObject =
         event.streams[0];
 
+      document.getElementById(
+        "viewerStatus"
+      ).innerText =
+        "🟢 Live Camera Connected";
+
     };
 
 }
 
 
+/* PEER JOINED */
+
 socket.on(
   "peer-joined",
   async () => {
 
-    if (!localStream) return;
+    if (!localStream)
+      return;
+
 
     createPeerConnection();
+
 
     const offer =
       await peerConnection.createOffer();
 
+
     await peerConnection.setLocalDescription(
       offer
     );
+
 
     socket.emit(
       "offer",
@@ -377,26 +968,31 @@ socket.on(
 );
 
 
+/* OFFER */
+
 socket.on(
   "offer",
   async offer => {
 
-    if (!peerConnection) {
-
+    if (!peerConnection)
       createPeerConnection();
 
-    }
 
     await peerConnection.setRemoteDescription(
-      new RTCSessionDescription(offer)
+      new RTCSessionDescription(
+        offer
+      )
     );
+
 
     const answer =
       await peerConnection.createAnswer();
 
+
     await peerConnection.setLocalDescription(
       answer
     );
+
 
     socket.emit(
       "answer",
@@ -406,33 +1002,43 @@ socket.on(
       }
     );
 
+
     document.getElementById(
       "viewerStatus"
     ).innerText =
-      "🟢 Camera से connect हो रहा है...";
+      "🟡 Camera से Connect हो रहा है...";
 
   }
 );
 
+
+/* ANSWER */
 
 socket.on(
   "answer",
   async answer => {
 
-    if (!peerConnection) return;
+    if (!peerConnection)
+      return;
+
 
     await peerConnection.setRemoteDescription(
-      new RTCSessionDescription(answer)
+      new RTCSessionDescription(
+        answer
+      )
     );
+
 
     document.getElementById(
       "cameraStatus"
     ).innerText =
-      "🟢 Viewer connected";
+      "🟢 Viewer Connected";
 
   }
 );
 
+
+/* ICE */
 
 socket.on(
   "ice-candidate",
@@ -440,14 +1046,14 @@ socket.on(
 
     try {
 
-      if (!peerConnection) {
-
+      if (!peerConnection)
         createPeerConnection();
 
-      }
 
       await peerConnection.addIceCandidate(
-        new RTCIceCandidate(candidate)
+        new RTCIceCandidate(
+          candidate
+        )
       );
 
     }
@@ -465,101 +1071,134 @@ socket.on(
 );
 
 
-function startScanner() {
+/* QR SCANNER */
 
-  const scanner =
-    new Html5Qrcode(
-      "scanner"
-    );
+async function startScanner() {
 
+  try {
 
-  scanner.start(
-
-    {
-      facingMode:
-        "environment"
-    },
-
-    {
-      fps: 10,
-      qrbox: 250
-    },
-
-    async decodedText => {
+    if (scannerInstance) {
 
       try {
 
-        const url =
-          new URL(decodedText);
+        await scannerInstance.stop();
 
-        const scannedRoom =
-          url.searchParams.get(
-            "room"
+      }
+
+      catch(e) {}
+
+    }
+
+
+    scannerInstance =
+      new Html5Qrcode(
+        "scanner"
+      );
+
+
+    await scannerInstance.start(
+
+      {
+        facingMode: "environment"
+      },
+
+      {
+        fps: 10,
+        qrbox: 250
+      },
+
+      async decodedText => {
+
+        try {
+
+          const url =
+            new URL(decodedText);
+
+
+          const scannedRoom =
+            url.searchParams.get(
+              "room"
+            );
+
+
+          if (!scannedRoom) {
+
+            alert(
+              "गलत QR Code"
+            );
+
+            return;
+
+          }
+
+
+          roomId =
+            scannedRoom;
+
+
+          document.getElementById(
+            "viewerStatus"
+          ).innerText =
+            "🟡 Camera से Connect हो रहा है...";
+
+
+          socket.emit(
+            "join-room",
+            roomId
           );
 
 
-        if (!scannedRoom) {
+          await scannerInstance.stop();
 
-          alert("गलत QR Code");
 
-          return;
+          document.getElementById(
+            "scanner"
+          ).innerHTML = "";
 
         }
 
+        catch(error) {
 
-        roomId =
-          scannedRoom;
-
-
-        document.getElementById(
-          "viewerStatus"
-        ).innerText =
-          "🔗 Camera से connect हो रहा है...";
+          console.log(error);
 
 
-        socket.emit(
-          "join-room",
-          roomId
-        );
+          document.getElementById(
+            "viewerStatus"
+          ).innerText =
+            "❌ QR Code सही नहीं है";
 
+        }
 
-        await scanner.stop();
+      },
 
-      }
+      errorMessage => {}
 
-      catch(error) {
+    );
 
-        console.log(error);
+  }
 
-        document.getElementById(
-          "viewerStatus"
-        ).innerText =
-          "❌ QR Code सही नहीं है";
-
-      }
-
-    },
-
-    errorMessage => {}
-
-  ).catch(error => {
+  catch(error) {
 
     console.log(error);
+
 
     document.getElementById(
       "viewerStatus"
     ).innerText =
-      "❌ Scanner camera शुरू नहीं हुआ";
+      "❌ Scanner Camera शुरू नहीं हुआ";
 
-  });
+  }
 
 }
 
+
+/* AUTO ROOM */
 
 const urlParams =
   new URLSearchParams(
     window.location.search
   );
+
 
 const autoRoom =
   urlParams.get("room");
@@ -570,10 +1209,12 @@ if (autoRoom) {
   roomId =
     autoRoom;
 
+
   document.getElementById(
     "viewerStatus"
   ).innerText =
-    "🔗 Room मिला — Camera से connect हो रहा है...";
+    "🔗 Room मिला — Camera से Connect हो रहा है...";
+
 
   socket.emit(
     "join-room",
@@ -582,15 +1223,43 @@ if (autoRoom) {
 
 }
 
-</script>
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/service-worker.js")
-      .then(() => console.log("App ready"))
-      .catch(error => console.log("Service Worker error:", error));
-  });
+
+/* PWA SERVICE WORKER */
+
+if (
+  "serviceWorker" in navigator
+) {
+
+  window.addEventListener(
+    "load",
+    () => {
+
+      navigator.serviceWorker
+        .register(
+          "/service-worker.js"
+        )
+
+        .then(
+          () =>
+            console.log(
+              "App ready"
+            )
+        )
+
+        .catch(
+          error =>
+            console.log(
+              "Service Worker error:",
+              error
+            )
+        );
+
+    }
+  );
+
 }
+
 </script>
+
 </body>
-    </html>
+  </html>
