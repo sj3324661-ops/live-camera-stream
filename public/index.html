@@ -15,29 +15,24 @@
   box-sizing:border-box;
 }
 
-html,
-body{
+html,body{
   margin:0;
   padding:0;
   width:100%;
   height:100%;
   background:#000;
-  overflow:hidden;
+  color:#fff;
   font-family:Arial,sans-serif;
-  color:white;
+  overflow:hidden;
 }
 
-/* =========================
-   HEADER
-========================= */
-
+/* HEADER */
 header{
   position:fixed;
   top:0;
   left:0;
   right:0;
-
-  height:48px;
+  height:46px;
 
   display:flex;
   align-items:center;
@@ -50,14 +45,10 @@ header{
   font-weight:bold;
 
   z-index:30;
-
   pointer-events:none;
 }
 
-/* =========================
-   CONTAINER
-========================= */
-
+/* CONTAINER */
 .container{
   width:100%;
   height:100%;
@@ -65,10 +56,7 @@ header{
   padding:0;
 }
 
-/* =========================
-   FULL SCREEN CAMERA
-========================= */
-
+/* FULL SCREEN CAMERA */
 .stage{
   position:fixed;
   inset:0;
@@ -77,10 +65,6 @@ header{
   height:100vh;
 
   background:#000;
-
-  border:0;
-  border-radius:0;
-
   overflow:hidden;
 
   z-index:1;
@@ -89,7 +73,6 @@ header{
 #remoteVideo{
   width:100%;
   height:100%;
-
   display:block;
 
   object-fit:cover;
@@ -97,15 +80,12 @@ header{
   background:#000;
 }
 
-/* =========================
-   OWN CAMERA - SMALL
-========================= */
-
+/* OWN CAMERA */
 #localVideo{
   position:absolute;
 
   right:12px;
-  bottom:92px;
+  bottom:90px;
 
   width:95px;
   height:125px;
@@ -114,21 +94,17 @@ header{
 
   background:#111;
 
-  border:2px solid white;
+  border:2px solid #fff;
   border-radius:11px;
 
   z-index:15;
 
-  box-shadow:0 4px 15px rgba(0,0,0,.6);
+  box-shadow:0 4px 15px rgba(0,0,0,.7);
 }
 
-/* =========================
-   WAITING
-========================= */
-
+/* WAITING */
 .waiting{
   position:absolute;
-
   inset:0;
 
   display:flex;
@@ -140,7 +116,6 @@ header{
   background:rgba(0,0,0,.45);
 
   z-index:5;
-
   pointer-events:none;
 }
 
@@ -152,13 +127,9 @@ header{
 .waiting p{
   margin:0;
   font-size:14px;
-  opacity:.85;
 }
 
-/* =========================
-   STATUS
-========================= */
-
+/* STATUS */
 .status{
   position:fixed;
 
@@ -172,28 +143,23 @@ header{
 
   padding:7px 12px;
 
-  border-radius:20px;
-
   background:rgba(0,0,0,.55);
+
+  border-radius:20px;
 
   font-size:12px;
 
   text-align:center;
 
   z-index:35;
-
-  backdrop-filter:blur(5px);
 }
 
-/* =========================
-   START BUTTON
-========================= */
-
+/* START */
 #startBtn{
   position:fixed;
 
   left:50%;
-  bottom:35px;
+  bottom:30px;
 
   transform:translateX(-50%);
 
@@ -207,7 +173,7 @@ header{
 
   background:#159447;
 
-  color:white;
+  color:#fff;
 
   font-size:14px;
   font-weight:bold;
@@ -215,25 +181,20 @@ header{
   z-index:50;
 }
 
-/* =========================
-   CONTROL BUTTONS
-========================= */
-
+/* CONTROLS */
 .controls{
   position:fixed;
 
   left:50%;
-  bottom:10px;
+  bottom:8px;
 
   transform:translateX(-50%);
 
   width:100%;
 
   display:flex;
-
   justify-content:center;
   align-items:center;
-
   flex-wrap:wrap;
 
   gap:4px;
@@ -241,34 +202,28 @@ header{
   padding:4px;
 
   z-index:40;
-
-  background:transparent;
 }
 
 .controls button{
   width:auto;
-  min-width:68px;
+  min-width:65px;
 
   padding:7px 8px;
 
   margin:0;
 
   border:0;
-
   border-radius:8px;
 
-  color:white;
+  color:#fff;
 
   font-size:11px;
   font-weight:bold;
 
-  box-shadow:0 3px 10px rgba(0,0,0,.4);
+  box-shadow:0 3px 10px rgba(0,0,0,.5);
 }
 
-/* =========================
-   GENERAL BUTTON
-========================= */
-
+/* BUTTONS */
 button{
   cursor:pointer;
   -webkit-tap-highlight-color:transparent;
@@ -290,14 +245,7 @@ button:active{
   background:#d97818;
 }
 
-.gray{
-  background:#34495e;
-}
-
-/* =========================
-   SOUND BUTTON
-========================= */
-
+/* SOUND */
 #soundBtn{
   position:fixed;
 
@@ -313,7 +261,7 @@ button:active{
 
   background:rgba(217,120,24,.9);
 
-  color:white;
+  color:#fff;
 
   font-size:12px;
   font-weight:bold;
@@ -321,10 +269,7 @@ button:active{
   z-index:45;
 }
 
-/* =========================
-   QR PANEL
-========================= */
-
+/* QR PANEL */
 #qrPanel{
   position:fixed;
 
@@ -355,10 +300,9 @@ button:active{
 
 #qrcode{
   display:flex;
-
   justify-content:center;
 
-  background:white;
+  background:#fff;
 
   padding:10px;
 
@@ -372,14 +316,10 @@ button:active{
 .room{
   font-size:12px;
   color:#9fc7ff;
-
   word-break:break-all;
 }
 
-/* =========================
-   SCANNER PANEL
-========================= */
-
+/* SCANNER */
 #scannerPanel{
   position:fixed;
 
@@ -414,15 +354,13 @@ button:active{
   padding:12px;
 
   border:0;
-
   border-radius:10px;
 
   background:#1769e0;
 
-  color:white;
+  color:#fff;
 
   font-size:14px;
-
   font-weight:bold;
 }
 
@@ -431,55 +369,45 @@ button:active{
   margin-top:12px;
 }
 
-/* =========================
-   HIDDEN
-========================= */
-
+/* HIDDEN */
 .hidden{
   display:none!important;
 }
 
-/* =========================
-   SMALL MOBILE
-========================= */
-
+/* MOBILE */
 @media(max-width:380px){
 
   #localVideo{
     width:82px;
     height:110px;
-    bottom:88px;
+
     right:8px;
+    bottom:86px;
   }
 
   .controls button{
-    min-width:62px;
-    padding:6px 7px;
-    font-size:10px;
-  }
+    min-width:60px;
 
-  .status{
-    font-size:11px;
+    padding:6px 7px;
+
+    font-size:10px;
   }
 
 }
 
-/* =========================
-   LANDSCAPE
-========================= */
-
+/* LANDSCAPE */
 @media(orientation:landscape){
 
   #localVideo{
     width:110px;
     height:82px;
 
-    bottom:70px;
     right:12px;
+    bottom:68px;
   }
 
   .controls{
-    bottom:8px;
+    bottom:7px;
   }
 
 }
@@ -494,20 +422,17 @@ button:active{
 
 <div class="container">
 
-  <!-- =========================
-       CAMERA SCREEN
-  ========================== -->
-
+  <!-- CAMERA -->
   <div class="stage">
 
-    <!-- OTHER PHONE CAMERA -->
+    <!-- दूसरे फोन का camera -->
     <video
       id="remoteVideo"
       autoplay
       playsinline>
     </video>
 
-    <!-- YOUR CAMERA -->
+    <!-- अपना camera -->
     <video
       id="localVideo"
       autoplay
@@ -531,45 +456,31 @@ button:active{
   </div>
 
 
-  <!-- =========================
-       START
-  ========================== -->
-
+  <!-- START -->
   <button
     id="startBtn"
     class="green">
-
     🚀 Camera Start + QR
-
   </button>
 
 
-  <!-- =========================
-       SOUND
-  ========================== -->
-
+  <!-- SOUND -->
   <button
     id="soundBtn"
     class="orange hidden">
-
     🔊 Sound ON
-
   </button>
 
 
-  <!-- =========================
-       STATUS
-  ========================== -->
-
-  <div id="status" class="status">
+  <!-- STATUS -->
+  <div
+    id="status"
+    class="status">
     Connecting...
   </div>
 
 
-  <!-- =========================
-       CONTROLS
-  ========================== -->
-
+  <!-- CONTROLS -->
   <div
     id="controls"
     class="controls hidden">
@@ -577,42 +488,31 @@ button:active{
     <button
       id="cameraBtn"
       class="green">
-
       📷 Camera
-
     </button>
 
     <button
       id="micBtn"
       class="green">
-
       🎤 Mic
-
     </button>
 
     <button
       id="switchBtn"
       class="orange">
-
       🔄 Switch
-
     </button>
 
     <button
       id="stopBtn"
       class="red">
-
       ⛔ Stop
-
     </button>
 
   </div>
 
 
-  <!-- =========================
-       QR
-  ========================== -->
-
+  <!-- QR PANEL -->
   <div
     id="qrPanel"
     class="hidden">
@@ -631,12 +531,8 @@ button:active{
   </div>
 
 
-  <!-- =========================
-       QR SCANNER
-  ========================== -->
-
-  <div
-    id="scannerPanel">
+  <!-- SCANNER -->
+  <div id="scannerPanel">
 
     <h3>
       📷 QR Scan करें
@@ -663,8 +559,7 @@ let socket = io();
 
 let localStream = null;
 
-let remoteStream =
-  new MediaStream();
+let remoteStream = new MediaStream();
 
 let peerConnection = null;
 
@@ -746,7 +641,7 @@ function status(text){
 
 
 /* =========================
-   START CAMERA
+   CAMERA
 ========================= */
 
 async function startCamera(){
@@ -776,6 +671,7 @@ async function startCamera(){
           height:{
             ideal:720
           }
+
         },
 
         audio:true
@@ -870,7 +766,7 @@ async function createRoom(){
 
 
 /* =========================
-   SHOW QR
+   QR
 ========================= */
 
 function showQR(){
@@ -990,9 +886,7 @@ function createPeer(){
     });
 
 
-  /* =========================
-     ADD LOCAL TRACKS
-  ========================== */
+  /* LOCAL TRACKS */
 
   if(localStream){
 
@@ -1010,9 +904,7 @@ function createPeer(){
   }
 
 
-  /* =========================
-     REMOTE TRACK
-  ========================== */
+  /* REMOTE TRACKS */
 
   peerConnection.ontrack =
     async event => {
@@ -1033,7 +925,7 @@ function createPeer(){
       }
 
 
-      const alreadyAdded =
+      const exists =
         remoteStream
         .getTracks()
         .some(
@@ -1043,7 +935,7 @@ function createPeer(){
         );
 
 
-      if(!alreadyAdded){
+      if(!exists){
 
         remoteStream.addTrack(
           event.track
@@ -1065,7 +957,7 @@ function createPeer(){
 
 
       status(
-        "🟢 दूसरे फोन का LIVE CAMERA CONNECTED"
+        "🟢 दूसरा फोन LIVE है"
       );
 
 
@@ -1085,9 +977,7 @@ function createPeer(){
     };
 
 
-  /* =========================
-     ICE
-  ========================== */
+  /* ICE */
 
   peerConnection.onicecandidate =
     event => {
@@ -1111,9 +1001,7 @@ function createPeer(){
     };
 
 
-  /* =========================
-     CONNECTION STATE
-  ========================== */
+  /* CONNECTION */
 
   peerConnection
     .onconnectionstatechange =
@@ -1152,7 +1040,7 @@ function createPeer(){
       ){
 
         status(
-          "🟡 Video connection हो रहा है..."
+          "🟡 Connecting..."
         );
 
       }
@@ -1176,7 +1064,7 @@ function createPeer(){
       ){
 
         status(
-          "❌ WebRTC connection failed"
+          "❌ Connection failed"
         );
 
       }
@@ -1190,7 +1078,7 @@ function createPeer(){
 
 
 /* =========================
-   SEND OFFER
+   OFFER
 ========================= */
 
 async function sendOffer(){
@@ -1222,7 +1110,7 @@ async function sendOffer(){
 
 
   status(
-    "📡 Phone B को connection offer भेजा गया"
+    "📡 Offer भेजा गया"
   );
 
 }
@@ -1279,7 +1167,7 @@ socket.on(
 
 
 /* =========================
-   OFFER
+   OFFER RECEIVED
 ========================= */
 
 socket.on(
@@ -1304,7 +1192,7 @@ socket.on(
     );
 
 
-    /* Pending ICE */
+    /* ICE QUEUE */
 
     for(
       const candidate
@@ -1359,7 +1247,7 @@ socket.on(
 
 
     status(
-      "📡 Phone A को answer भेजा गया"
+      "📡 Answer भेजा गया"
     );
 
   }
@@ -1367,7 +1255,7 @@ socket.on(
 
 
 /* =========================
-   ANSWER
+   ANSWER RECEIVED
 ========================= */
 
 socket.on(
@@ -1428,7 +1316,7 @@ socket.on(
 
 
     status(
-      "🟢 Answer मिल गया — connecting..."
+      "🟢 Answer मिल गया"
     );
 
   }
@@ -1436,7 +1324,7 @@ socket.on(
 
 
 /* =========================
-   ICE CANDIDATE
+   ICE RECEIVED
 ========================= */
 
 socket.on(
@@ -1521,8 +1409,7 @@ socket.on(
 
 
     status(
-      "✅ Room joined: " +
-      data.roomId
+      "✅ Room joined"
     );
 
   }
@@ -1563,6 +1450,13 @@ cameraBtn.onclick = () => {
     ? "📷 Camera"
     : "🚫 Camera";
 
+
+  status(
+    track.enabled
+    ? "📷 Camera ON"
+    : "🚫 Camera OFF"
+  );
+
 };
 
 
@@ -1599,6 +1493,13 @@ micBtn.onclick = () => {
     track.enabled
     ? "🎤 Mic"
     : "🔇 Mic";
+
+
+  status(
+    track.enabled
+    ? "🎤 Mic ON"
+    : "🔇 Mic OFF"
+  );
 
 };
 
@@ -1672,4 +1573,177 @@ async() => {
 
     if(oldTrack){
 
-   
+      oldTrack.stop();
+
+      localStream
+        .removeTrack(
+          oldTrack
+        );
+
+    }
+
+
+    localStream.addTrack(
+      newVideoTrack
+    );
+
+
+    localVideo.srcObject =
+      localStream;
+
+
+    status(
+      "🔄 Camera switched"
+    );
+
+
+  }catch(error){
+
+    console.error(error);
+
+
+    status(
+      "❌ Camera switch failed"
+    );
+
+  }
+
+};
+
+
+/* =========================
+   SOUND
+========================= */
+
+soundBtn.onclick =
+async() => {
+
+  try{
+
+    remoteVideo.muted =
+      false;
+
+    remoteVideo.volume =
+      1;
+
+
+    await remoteVideo.play();
+
+
+    soundBtn.innerText =
+      "🔊 Sound ON";
+
+
+    status(
+      "🔊 Sound ON"
+    );
+
+
+  }catch(error){
+
+    console.log(
+      error
+    );
+
+  }
+
+};
+
+
+/* =========================
+   STOP CAMERA
+========================= */
+
+stopBtn.onclick = () => {
+
+  if(localStream){
+
+    localStream
+      .getTracks()
+      .forEach(
+        track =>
+        track.stop()
+      );
+
+
+    localStream = null;
+
+  }
+
+
+  localVideo.srcObject =
+    null;
+
+
+  cameraBtn.innerText =
+    "📷 Camera";
+
+
+  micBtn.innerText =
+    "🎤 Mic";
+
+
+  status(
+    "⛔ Camera stopped"
+  );
+
+};
+
+
+/* =========================
+   START BUTTON
+========================= */
+
+startBtn.onclick =
+  createRoom;
+
+
+/* =========================
+   QR SCANNER
+========================= */
+
+scanBtn.onclick =
+async() => {
+
+  if(scanner){
+
+    return;
+
+  }
+
+
+  scanner =
+    new Html5Qrcode(
+      "reader"
+    );
+
+
+  try{
+
+    await scanner.start(
+
+      {
+        facingMode:
+          "environment"
+      },
+
+      {
+        fps:10,
+        qrbox:250
+      },
+
+      async decodedText => {
+
+        console.log(
+          "QR:",
+          decodedText
+        );
+
+
+        let url;
+
+
+        try{
+
+          url =
+        
