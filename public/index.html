@@ -2,22 +2,21 @@
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 
 <title>Live Camera</title>
 
-<script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+<!-- IMPORTANT: Server वाला Socket.IO -->
+<script src="/socket.io/socket.io.js"></script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://unpkg.com/html5-qrcode"></script>
 
 <style>
-*{
-  box-sizing:border-box;
-}
+*{box-sizing:border-box}
 
 html,body{
   margin:0;
-  padding:0;
   width:100%;
   height:100%;
   background:#000;
@@ -44,7 +43,7 @@ html,body{
   object-fit:cover;
   background:#111;
   border:2px solid #fff;
-  border-radius:11px;
+  border-radius:12px;
   z-index:20;
 }
 
@@ -53,11 +52,11 @@ header{
   top:0;
   left:0;
   right:0;
-  height:45px;
+  height:46px;
   display:flex;
-  justify-content:center;
   align-items:center;
-  background:rgba(0,0,0,.45);
+  justify-content:center;
+  background:rgba(0,0,0,.5);
   z-index:30;
   font-size:18px;
   font-weight:bold;
@@ -65,7 +64,7 @@ header{
 
 #status{
   position:fixed;
-  top:55px;
+  top:56px;
   left:50%;
   transform:translateX(-50%);
   background:rgba(0,0,0,.65);
@@ -73,7 +72,6 @@ header{
   border-radius:20px;
   font-size:12px;
   z-index:35;
-  white-space:nowrap;
 }
 
 #waiting{
@@ -89,14 +87,14 @@ header{
 
 #startBtn{
   position:fixed;
-  left:50%;
   bottom:75px;
+  left:50%;
   transform:translateX(-50%);
   padding:13px 20px;
   border:0;
   border-radius:12px;
   background:#159447;
-  color:#fff;
+  color:white;
   font-size:14px;
   font-weight:bold;
   z-index:50;
@@ -117,22 +115,14 @@ header{
   padding:8px 9px;
   border:0;
   border-radius:8px;
-  color:#fff;
+  color:white;
   font-size:11px;
   font-weight:bold;
 }
 
-.green{
-  background:#159447;
-}
-
-.red{
-  background:#d93636;
-}
-
-.orange{
-  background:#d97818;
-}
+.green{background:#159447}
+.red{background:#d93636}
+.orange{background:#d97818}
 
 #soundBtn{
   position:fixed;
@@ -143,8 +133,6 @@ header{
   border-radius:20px;
   background:#d97818;
   color:#fff;
-  font-size:12px;
-  font-weight:bold;
   z-index:40;
 }
 
@@ -183,12 +171,12 @@ header{
   border:0;
   border-radius:10px;
   background:#1769e0;
-  color:#fff;
+  color:white;
   font-weight:bold;
 }
 
 .closeBtn{
-  padding:9px 15px;
+  padding:9px 16px;
   border:0;
   border-radius:8px;
   color:#fff;
@@ -200,19 +188,15 @@ header{
 }
 
 @media(max-width:380px){
-
   #localVideo{
     width:82px;
     height:110px;
-    right:8px;
-    bottom:82px;
   }
 
   #controls button{
     padding:7px;
     font-size:10px;
   }
-
 }
 </style>
 </head>
@@ -221,20 +205,9 @@ header{
 
 <header>📹 Live Camera</header>
 
-<!-- दूसरे फोन का कैमरा -->
-<video
-  id="remoteVideo"
-  autoplay
-  playsinline>
-</video>
+<video id="remoteVideo" autoplay playsinline></video>
 
-<!-- अपना कैमरा -->
-<video
-  id="localVideo"
-  autoplay
-  muted
-  playsinline>
-</video>
+<video id="localVideo" autoplay muted playsinline></video>
 
 <div id="waiting">
   <div>
@@ -282,9 +255,7 @@ header{
 
   <p id="roomText"></p>
 
-  <button
-    class="closeBtn"
-    onclick="closeQR()">
+  <button id="closeQR" class="closeBtn">
     ❌ Close
   </button>
 
@@ -303,9 +274,7 @@ header{
 
   <br>
 
-  <button
-    class="closeBtn"
-    onclick="closeScanner()">
+  <button id="closeScanner" class="closeBtn">
     ❌ Close
   </button>
 
@@ -314,37 +283,30 @@ header{
 
 <script>
 
-/* =================================
-   SOCKET
-================================= */
-
-const socket = io();
+console.log("LIVE CAMERA SCRIPT START");
 
 
-/* =================================
+/* =========================
    VARIABLES
-================================= */
+========================= */
 
+let socket;
 let localStream = null;
-
 let remoteStream = new MediaStream();
-
 let peerConnection = null;
 
 let roomId = null;
-
 let initiator = false;
 
 let pendingCandidates = [];
 
 let facingMode = "user";
-
 let scanner = null;
 
 
-/* =================================
+/* =========================
    ELEMENTS
-================================= */
+========================= */
 
 const startBtn =
 document.getElementById("startBtn");
@@ -388,6 +350,12 @@ document.getElementById("scannerPanel");
 const scanBtn =
 document.getElementById("scanBtn");
 
+const closeQRBtn =
+document.getElementById("closeQR");
+
+const closeScannerBtn =
+document.getElementById("closeScanner");
+
 const qrcodeBox =
 document.getElementById("qrcode");
 
@@ -395,9 +363,42 @@ const roomText =
 document.getElementById("roomText");
 
 
-/* =================================
+/* =========================
+   SOCKET
+========================= */
+
+try{
+
+  socket = io();
+
+  socket.on("connect",function(){
+
+    console.log(
+      "SOCKET CONNECTED",
+      socket.id
+    );
+
+    setStatus(
+      "🟢 Server connected"
+    );
+
+  });
+
+}
+catch(error){
+
+  console.error(error);
+
+  setStatus(
+    "❌ Server connection error"
+  );
+
+}
+
+
+/* =========================
    STATUS
-================================= */
+========================= */
 
 function setStatus(text){
 
@@ -408,30 +409,13 @@ function setStatus(text){
 }
 
 
-/* =================================
-   START LOCAL CAMERA
-================================= */
+/* =========================
+   CAMERA
+========================= */
 
 async function startCamera(){
 
   try{
-
-    if(!navigator.mediaDevices){
-
-      alert(
-        "इस browser में Camera उपलब्ध नहीं है।"
-      );
-
-      return false;
-    }
-
-    if(localStream){
-
-      localStream
-      .getTracks()
-      .forEach(track => track.stop());
-
-    }
 
     localStream =
     await navigator.mediaDevices.getUserMedia({
@@ -449,14 +433,17 @@ async function startCamera(){
     localVideo.srcObject =
     localStream;
 
-    controls.classList.remove("hidden");
+    controls.classList.remove(
+      "hidden"
+    );
 
-    setStatus("📷 Camera ON");
+    setStatus(
+      "📷 Camera ON"
+    );
 
     return true;
 
   }
-
   catch(error){
 
     console.error(
@@ -465,22 +452,19 @@ async function startCamera(){
     );
 
     alert(
-      "Camera और Microphone की permission Allow करें।"
-    );
-
-    setStatus(
-      "❌ Camera permission problem"
+      "Camera और Microphone की Permission Allow करें।"
     );
 
     return false;
+
   }
 
 }
 
 
-/* =================================
+/* =========================
    CREATE ROOM
-================================= */
+========================= */
 
 async function createRoom(){
 
@@ -493,14 +477,14 @@ async function createRoom(){
   .toUpperCase();
 
   console.log(
-    "CREATED ROOM:",
+    "ROOM:",
     roomId
   );
 
   const ok =
   await startCamera();
 
-  if(!ok) return;
+  if(!ok)return;
 
   socket.emit(
     "join-room",
@@ -509,9 +493,13 @@ async function createRoom(){
 
   showQR();
 
-  startBtn.classList.add("hidden");
+  startBtn.classList.add(
+    "hidden"
+  );
 
-  scannerPanel.classList.add("hidden");
+  scannerPanel.classList.add(
+    "hidden"
+  );
 
   setStatus(
     "📱 QR तैयार है"
@@ -520,46 +508,41 @@ async function createRoom(){
 }
 
 
-/* =================================
+/* =========================
    QR
-================================= */
+========================= */
 
 function showQR(){
 
-  qrPanel.classList.remove("hidden");
+  qrPanel.classList.remove(
+    "hidden"
+  );
 
   qrcodeBox.innerHTML = "";
 
-  const url =
-  window.location.origin +
-  "/?room=" +
-  encodeURIComponent(roomId);
+  const qrURL =
+    window.location.origin +
+    "/?room=" +
+    encodeURIComponent(roomId);
 
   new QRCode(
     qrcodeBox,
     {
-      text:url,
+      text:qrURL,
       width:220,
       height:220
     }
   );
 
   roomText.innerText =
-  "Room: " + roomId;
+    "Room: " + roomId;
 
 }
 
 
-function closeQR(){
-
-  qrPanel.classList.add("hidden");
-
-}
-
-
-/* =================================
+/* =========================
    JOIN ROOM
-================================= */
+========================= */
 
 async function joinRoom(id){
 
@@ -567,21 +550,22 @@ async function joinRoom(id){
 
   initiator = false;
 
-  console.log(
-    "JOINING ROOM:",
-    roomId
-  );
-
   const ok =
   await startCamera();
 
-  if(!ok) return;
+  if(!ok)return;
 
-  startBtn.classList.add("hidden");
+  startBtn.classList.add(
+    "hidden"
+  );
 
-  qrPanel.classList.add("hidden");
+  qrPanel.classList.add(
+    "hidden"
+  );
 
-  scannerPanel.classList.add("hidden");
+  scannerPanel.classList.add(
+    "hidden"
+  );
 
   socket.emit(
     "join-room",
@@ -595,61 +579,44 @@ async function joinRoom(id){
 }
 
 
-/* =================================
-   CREATE PEER CONNECTION
-================================= */
+/* =========================
+   PEER
+========================= */
 
 function createPeer(){
 
   if(peerConnection){
-
     return peerConnection;
-
   }
-
-  console.log(
-    "CREATING PEER CONNECTION"
-  );
 
   peerConnection =
   new RTCPeerConnection({
 
     iceServers:[
-
       {
         urls:
         "stun:stun.l.google.com:19302"
       },
-
       {
         urls:
         "stun:stun1.l.google.com:19302"
       },
-
       {
         urls:
         "stun:stun2.l.google.com:19302"
       }
-
     ]
 
   });
 
 
-  /* ===============================
-     SEND LOCAL TRACKS
-  =============================== */
+  /* SEND LOCAL CAMERA */
 
   if(localStream){
 
     localStream
     .getTracks()
-    .forEach(track => {
-
-      console.log(
-        "ADDING LOCAL TRACK:",
-        track.kind
-      );
+    .forEach(function(track){
 
       peerConnection.addTrack(
         track,
@@ -661,55 +628,44 @@ function createPeer(){
   }
 
 
-  /* ===============================
-     RECEIVE REMOTE TRACKS
-  =============================== */
+  /* RECEIVE OTHER CAMERA */
 
   peerConnection.ontrack =
-  async(event) => {
+  function(event){
 
     console.log(
-      "REMOTE TRACK RECEIVED:",
+      "REMOTE TRACK:",
       event.track.kind
     );
 
-    const exists =
-    remoteStream
-    .getTracks()
-    .some(
-      track =>
-      track.id === event.track.id
-    );
+    if(
+      !remoteStream
+    ){
 
-    if(!exists){
-
-      remoteStream.addTrack(
-        event.track
-      );
+      remoteStream =
+      new MediaStream();
 
     }
+
+    remoteStream.addTrack(
+      event.track
+    );
 
     remoteVideo.srcObject =
     remoteStream;
 
-    waiting.classList.add("hidden");
+    waiting.classList.add(
+      "hidden"
+    );
 
-    soundBtn.classList.remove("hidden");
+    soundBtn.classList.remove(
+      "hidden"
+    );
 
-    try{
-
-      await remoteVideo.play();
-
-    }
-
-    catch(error){
-
-      console.log(
-        "PLAY ERROR:",
-        error
-      );
-
-    }
+    remoteVideo.play()
+    .catch(function(error){
+      console.log(error);
+    });
 
     setStatus(
       "🟢 दूसरा फोन LIVE है"
@@ -718,12 +674,10 @@ function createPeer(){
   };
 
 
-  /* ===============================
-     ICE
-  =============================== */
+  /* ICE */
 
   peerConnection.onicecandidate =
-  event => {
+  function(event){
 
     if(event.candidate){
 
@@ -740,24 +694,22 @@ function createPeer(){
   };
 
 
-  /* ===============================
-     CONNECTION STATE
-  =============================== */
-
   peerConnection.onconnectionstatechange =
-  () => {
-
-    const state =
-    peerConnection.connectionState;
+  function(){
 
     console.log(
-      "CONNECTION STATE:",
-      state
+      "CONNECTION:",
+      peerConnection.connectionState
     );
 
-    if(state === "connected"){
+    if(
+      peerConnection.connectionState ===
+      "connected"
+    ){
 
-      waiting.classList.add("hidden");
+      waiting.classList.add(
+        "hidden"
+      );
 
       setStatus(
         "🟢 दोनों फोन CONNECTED"
@@ -765,23 +717,10 @@ function createPeer(){
 
     }
 
-    if(state === "connecting"){
-
-      setStatus(
-        "🟡 Connecting..."
-      );
-
-    }
-
-    if(state === "disconnected"){
-
-      setStatus(
-        "🟠 Connection disconnected"
-      );
-
-    }
-
-    if(state === "failed"){
+    if(
+      peerConnection.connectionState ===
+      "failed"
+    ){
 
       setStatus(
         "❌ Connection failed"
@@ -791,39 +730,19 @@ function createPeer(){
 
   };
 
-
-  /* ===============================
-     ICE CONNECTION STATE
-  =============================== */
-
-  peerConnection.oniceconnectionstatechange =
-  () => {
-
-    console.log(
-      "ICE STATE:",
-      peerConnection.iceConnectionState
-    );
-
-  };
-
-
   return peerConnection;
 
 }
 
 
-/* =================================
-   SEND OFFER
-================================= */
+/* =========================
+   OFFER
+========================= */
 
 async function sendOffer(){
 
   const pc =
   createPeer();
-
-  console.log(
-    "CREATING OFFER"
-  );
 
   const offer =
   await pc.createOffer();
@@ -847,79 +766,21 @@ async function sendOffer(){
 }
 
 
-/* =================================
-   SOCKET CONNECT
-================================= */
-
-socket.on(
-  "connect",
-  () => {
-
-    console.log(
-      "SOCKET CONNECTED:",
-      socket.id
-    );
-
-    setStatus(
-      "🟢 Server connected"
-    );
-
-  }
-);
-
-
-/* =================================
-   ROOM JOINED
-================================= */
-
-socket.on(
-  "room-joined",
-  data => {
-
-    console.log(
-      "ROOM JOINED:",
-      data
-    );
-
-    if(data.users === 1){
-
-      setStatus(
-        "📱 दूसरे फोन का इंतजार..."
-      );
-
-    }
-
-    if(data.users === 2){
-
-      setStatus(
-        "📱 दोनों फोन room में हैं"
-      );
-
-    }
-
-  }
-);
-
-
-/* =================================
+/* =========================
    PEER JOINED
-================================= */
+========================= */
 
 socket.on(
   "peer-joined",
-  async() => {
+  async function(){
 
     console.log(
-      "PEER JOINED EVENT"
+      "PEER JOINED"
     );
 
     setStatus(
       "📱 दूसरा फोन मिल गया"
     );
-
-    /*
-      सिर्फ Phone A offer बनाएगा
-    */
 
     if(initiator){
 
@@ -931,23 +792,17 @@ socket.on(
 );
 
 
-/* =================================
+/* =========================
    PEER READY
-================================= */
+========================= */
 
 socket.on(
   "peer-ready",
-  async() => {
+  async function(){
 
     console.log(
-      "PEER READY EVENT"
+      "PEER READY"
     );
-
-    /*
-      अगर किसी कारण peer-joined
-      miss हो जाए तो initiator
-      फिर से offer भेज सकता है
-    */
 
     if(initiator){
 
@@ -963,13 +818,13 @@ socket.on(
 );
 
 
-/* =================================
+/* =========================
    OFFER RECEIVED
-================================= */
+========================= */
 
 socket.on(
   "offer",
-  async(offer) => {
+  async function(offer){
 
     console.log(
       "OFFER RECEIVED"
@@ -979,17 +834,10 @@ socket.on(
     createPeer();
 
     await pc.setRemoteDescription(
-      new RTCSessionDescription(offer)
+      new RTCSessionDescription(
+        offer
+      )
     );
-
-    console.log(
-      "REMOTE DESCRIPTION SET"
-    );
-
-
-    /*
-      Pending ICE
-    */
 
     for(
       const candidate
@@ -999,28 +847,20 @@ socket.on(
       try{
 
         await pc.addIceCandidate(
-          new RTCIceCandidate(candidate)
+          new RTCIceCandidate(
+            candidate
+          )
         );
 
-      }
+      }catch(error){
 
-      catch(error){
-
-        console.error(
-          "PENDING ICE ERROR:",
-          error
-        );
+        console.log(error);
 
       }
 
     }
 
     pendingCandidates = [];
-
-
-    /*
-      Answer
-    */
 
     const answer =
     await pc.createAnswer();
@@ -1045,36 +885,25 @@ socket.on(
 );
 
 
-/* =================================
-   ANSWER RECEIVED
-================================= */
+/* =========================
+   ANSWER
+========================= */
 
 socket.on(
   "answer",
-  async(answer) => {
+  async function(answer){
 
     console.log(
       "ANSWER RECEIVED"
     );
 
-    if(!peerConnection){
-
-      console.log(
-        "NO PEER CONNECTION"
-      );
-
-      return;
-
-    }
+    if(!peerConnection)return;
 
     await peerConnection.setRemoteDescription(
-      new RTCSessionDescription(answer)
+      new RTCSessionDescription(
+        answer
+      )
     );
-
-    console.log(
-      "ANSWER REMOTE DESCRIPTION SET"
-    );
-
 
     for(
       const candidate
@@ -1084,17 +913,14 @@ socket.on(
       try{
 
         await peerConnection.addIceCandidate(
-          new RTCIceCandidate(candidate)
+          new RTCIceCandidate(
+            candidate
+          )
         );
 
-      }
+      }catch(error){
 
-      catch(error){
-
-        console.error(
-          "ICE ERROR:",
-          error
-        );
+        console.log(error);
 
       }
 
@@ -1103,24 +929,20 @@ socket.on(
     pendingCandidates = [];
 
     setStatus(
-      "🟢 Answer मिल गया"
+      "🟢 Connection ready"
     );
 
   }
 );
 
 
-/* =================================
-   ICE RECEIVED
-================================= */
+/* =========================
+   ICE
+========================= */
 
 socket.on(
   "ice-candidate",
-  async(candidate) => {
-
-    console.log(
-      "ICE RECEIVED"
-    );
+  async function(candidate){
 
     if(
       peerConnection &&
@@ -1130,22 +952,18 @@ socket.on(
       try{
 
         await peerConnection.addIceCandidate(
-          new RTCIceCandidate(candidate)
+          new RTCIceCandidate(
+            candidate
+          )
         );
 
-      }
+      }catch(error){
 
-      catch(error){
-
-        console.error(
-          "ADD ICE ERROR:",
-          error
-        );
+        console.log(error);
 
       }
 
     }
-
     else{
 
       pendingCandidates.push(
@@ -1158,13 +976,13 @@ socket.on(
 );
 
 
-/* =================================
+/* =========================
    ROOM FULL
-================================= */
+========================= */
 
 socket.on(
   "room-full",
-  () => {
+  function(){
 
     alert(
       "यह Room पहले से 2 फोन से connected है।"
@@ -1178,349 +996,409 @@ socket.on(
 );
 
 
-/* =================================
-   CAMERA ON/OFF
-================================= */
+/* =========================
+   CAMERA BUTTON
+========================= */
 
-cameraBtn.onclick =
-function(){
+cameraBtn.addEventListener(
+  "click",
+  function(){
 
-  if(!localStream) return;
+    if(!localStream)return;
 
-  const track =
-  localStream.getVideoTracks()[0];
-
-  if(!track) return;
-
-  track.enabled =
-  !track.enabled;
-
-  cameraBtn.innerText =
-  track.enabled
-  ? "📷 Camera"
-  : "🚫 Camera";
-
-  setStatus(
-    track.enabled
-    ? "📷 Camera ON"
-    : "🚫 Camera OFF"
-  );
-
-};
-
-
-/* =================================
-   MIC ON/OFF
-================================= */
-
-micBtn.onclick =
-function(){
-
-  if(!localStream) return;
-
-  const track =
-  localStream.getAudioTracks()[0];
-
-  if(!track) return;
-
-  track.enabled =
-  !track.enabled;
-
-  micBtn.innerText =
-  track.enabled
-  ? "🎤 Mic"
-  : "🔇 Mic";
-
-  setStatus(
-    track.enabled
-    ? "🎤 Mic ON"
-    : "🔇 Mic OFF"
-  );
-
-};
-
-
-/* =================================
-   SWITCH CAMERA
-================================= */
-
-switchBtn.onclick =
-async function(){
-
-  if(!localStream){
-
-    return;
-
-  }
-
-  facingMode =
-  facingMode === "user"
-  ? "environment"
-  : "user";
-
-  try{
-
-    const newStream =
-    await navigator.mediaDevices.getUserMedia({
-
-      video:{
-        facingMode:facingMode
-      },
-
-      audio:false
-
-    });
-
-    const newTrack =
-    newStream.getVideoTracks()[0];
-
-
-    const sender =
-    peerConnection &&
-    peerConnection
-    .getSenders()
-    .find(
-      sender =>
-      sender.track &&
-      sender.track.kind === "video"
-    );
-
-
-    if(sender){
-
-      await sender.replaceTrack(
-        newTrack
-      );
-
-    }
-
-
-    const oldTrack =
+    const track =
     localStream.getVideoTracks()[0];
 
-    if(oldTrack){
+    if(!track)return;
 
-      oldTrack.stop();
+    track.enabled =
+    !track.enabled;
 
-      localStream.removeTrack(
-        oldTrack
-      );
-
-    }
-
-
-    localStream.addTrack(
-      newTrack
-    );
-
-    localVideo.srcObject =
-    localStream;
-
-    setStatus(
-      "🔄 Camera switched"
-    );
+    cameraBtn.innerText =
+    track.enabled
+    ? "📷 Camera"
+    : "🚫 Camera";
 
   }
-
-  catch(error){
-
-    console.error(error);
-
-    setStatus(
-      "❌ Camera switch failed"
-    );
-
-  }
-
-};
+);
 
 
-/* =================================
-   SOUND
-================================= */
+/* =========================
+   MIC
+========================= */
 
-soundBtn.onclick =
-async function(){
+micBtn.addEventListener(
+  "click",
+  function(){
 
-  remoteVideo.muted = false;
+    if(!localStream)return;
 
-  remoteVideo.volume = 1;
+    const track =
+    localStream.getAudioTracks()[0];
 
-  try{
+    if(!track)return;
 
-    await remoteVideo.play();
+    track.enabled =
+    !track.enabled;
+
+    micBtn.innerText =
+    track.enabled
+    ? "🎤 Mic"
+    : "🔇 Mic";
 
   }
-
-  catch(error){
-
-    console.log(error);
-
-  }
-
-  setStatus(
-    "🔊 Sound ON"
-  );
-
-};
+);
 
 
-/* =================================
-   STOP
-================================= */
+/* =========================
+   SWITCH CAMERA
+========================= */
 
-stopBtn.onclick =
-function(){
+switchBtn.addEventListener(
+  "click",
+  async function(){
 
-  if(localStream){
+    if(!localStream)return;
 
-    localStream
-    .getTracks()
-    .forEach(
-      track => track.stop()
-    );
+    facingMode =
+    facingMode === "user"
+    ? "environment"
+    : "user";
 
-    localStream = null;
+    try{
 
-  }
+      const stream =
+      await navigator.mediaDevices.getUserMedia({
 
-  localVideo.srcObject = null;
+        video:{
+          facingMode:facingMode
+        },
 
-  cameraBtn.innerText =
-  "📷 Camera";
+        audio:false
 
-  micBtn.innerText =
-  "🎤 Mic";
+      });
 
-  setStatus(
-    "⛔ Camera stopped"
-  );
+      const newTrack =
+      stream.getVideoTracks()[0];
 
-};
+      const sender =
+      peerConnection &&
+      peerConnection
+      .getSenders()
+      .find(function(s){
 
+        return s.track &&
+        s.track.kind === "video";
 
-/* =================================
-   START BUTTON
-================================= */
+      });
 
-startBtn.onclick =
-function(){
+      if(sender){
 
-  createRoom();
-
-};
-
-
-/* =================================
-   QR SCANNER
-================================= */
-
-scanBtn.onclick =
-async function(){
-
-  if(scanner){
-
-    return;
-
-  }
-
-  scanner =
-  new Html5Qrcode(
-    "reader"
-  );
-
-  try{
-
-    await scanner.start(
-
-      {
-        facingMode:"environment"
-      },
-
-      {
-        fps:10,
-        qrbox:250
-      },
-
-      async(decodedText) => {
-
-        console.log(
-          "QR FOUND:",
-          decodedText
+        await sender.replaceTrack(
+          newTrack
         );
-
-        let url;
-
-        try{
-
-          url =
-          new URL(decodedText);
-
-        }
-
-        catch(error){
-
-          alert(
-            "Invalid QR"
-          );
-
-          return;
-
-        }
-
-        const room =
-        url.searchParams.get("room");
-
-        if(!room){
-
-          alert(
-            "Room ID नहीं मिला"
-          );
-
-          return;
-
-        }
-
-        try{
-
-          await scanner.stop();
-
-          scanner.clear();
-
-        }
-
-        catch(error){
-
-          console.log(error);
-
-        }
-
-        scanner = null;
-
-        await joinRoom(room);
 
       }
 
-    );
+      const oldTrack =
+      localStream.getVideoTracks()[0];
+
+      if(oldTrack){
+
+        oldTrack.stop();
+
+        localStream.removeTrack(
+          oldTrack
+        );
+
+      }
+
+      localStream.addTrack(
+        newTrack
+      );
+
+      localVideo.srcObject =
+      localStream;
+
+      setStatus(
+        "🔄 Camera switched"
+      );
+
+    }
+    catch(error){
+
+      console.error(error);
+
+      setStatus(
+        "❌ Camera switch failed"
+      );
+
+    }
+
+  }
+);
+
+
+/* =========================
+   STOP
+========================= */
+
+stopBtn.addEventListener(
+  "click",
+  function(){
+
+    if(localStream){
+
+      localStream
+      .getTracks()
+      .forEach(function(track){
+        track.stop();
+      });
+
+      localStream = null;
+
+    }
+
+    localVideo.srcObject = null;
 
     setStatus(
-      "📷 QR Scanner चालू है"
+      "⛔ Camera stopped"
     );
 
   }
+);
 
-  catch(error){
 
-    console.error(error);
+/* =========================
+   SOUND
+========================= */
 
-    alert(
-      "QR Scanner के लिए Camera Permission Allow करें।"
+soundBtn.addEventListener(
+  "click",
+  async function(){
+
+    remoteVideo.muted = false;
+
+    remoteVideo.volume = 1;
+
+    try{
+
+      await remoteVideo.play();
+
+    }catch(error){
+
+      console.log(error);
+
+    }
+
+  }
+);
+
+
+/* =========================
+   START
+========================= */
+
+startBtn.addEventListener(
+  "click",
+  function(){
+
+    createRoom();
+
+  }
+);
+
+
+/* =========================
+   CLOSE QR
+========================= */
+
+closeQRBtn.addEventListener(
+  "click",
+  function(){
+
+    qrPanel.classList.add(
+      "hidden"
     );
 
   }
+);
 
-};
+
+/* =========================
+   QR SCANNER
+========================= */
+
+scanBtn.addEventListener(
+  "click",
+  async function(){
+
+    if(scanner)return;
+
+    if(
+      typeof Html5Qrcode ===
+      "undefined"
+    ){
+
+      alert(
+        "QR Scanner load नहीं हुआ।"
+      );
+
+      return;
+
+    }
+
+    scanner =
+    new Html5Qrcode(
+      "reader"
+    );
+
+    try{
+
+      await scanner.start(
+
+        {
+          facingMode:"environment"
+        },
+
+        {
+          fps:10,
+          qrbox:250
+        },
+
+        async function(decodedText){
+
+          console.log(
+            "QR FOUND:",
+            decodedText
+          );
+
+          let url;
+
+          try{
+
+            url =
+            new URL(decodedText);
+
+          }
+          catch(error){
+
+            return;
+
+          }
+
+          const room =
+          url.searchParams.get(
+            "room"
+          );
+
+          if(!room)return;
+
+          try{
+
+            await scanner.stop();
+
+            scanner.clear();
+
+          }catch(error){
+
+            console.log(error);
+
+          }
+
+          scanner = null;
+
+          await joinRoom(room);
+
+        }
+
+      );
+
+      setStatus(
+        "📷 QR Scanner चालू है"
+      );
+
+    }
+    catch(error){
+
+      console.error(error);
+
+      scanner = null;
+
+      alert(
+        "Camera Permission Allow करें।"
+      );
+
+    }
+
+  }
+);
 
 
-/* =================================
+/* =========================
    CLOSE SCANNER
+========================= */
+
+closeScannerBtn.addEventListener(
+  "click",
+  async function(){
+
+    if(scanner){
+
+      try{
+
+        await scanner.stop();
+
+        scanner.clear();
+
+      }catch(error){
+
+        console.log(error);
+
+      }
+
+      scanner = null;
+
+    }
+
+    document.getElementById(
+      "reader"
+    ).innerHTML = "";
+
+    setStatus(
+      "🟡 Ready"
+    );
+
+  }
+);
+
+
+/* =========================
+   AUTO JOIN
+========================= */
+
+window.addEventListener(
+  "load",
+  function(){
+
+    const params =
+    new URLSearchParams(
+      window.location.search
+    );
+
+    const room =
+    params.get("room");
+
+    if(room){
+
+      joinRoom(room);
+
+    }
+
+  }
+);
+
+</script>
+
+</body>
+  </html>
