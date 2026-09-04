@@ -19,23 +19,36 @@ app.get("/", (req, res) => {
 
 io.on("connection", (socket) => {
 
-  console.log("Connected:", socket.id);
+  console.log("CONNECTED:", socket.id);
 
+  // =========================
   // JOIN ROOM
+  // =========================
   socket.on("join-room", (roomId) => {
 
     if (!roomId) return;
 
-    const room = io.sockets.adapter.rooms.get(roomId);
-    const users = room ? room.size : 0;
+    const room =
+      io.sockets.adapter.rooms.get(roomId);
 
-    // सिर्फ 2 फोन
+    const users =
+      room ? room.size : 0;
+
+    console.log(
+      "JOIN REQUEST:",
+      socket.id,
+      roomId,
+      "users:",
+      users
+    );
+
+    // Maximum 2 phones
     if (users >= 2) {
 
       socket.emit("room-full");
 
       console.log(
-        "Room full:",
+        "ROOM FULL:",
         roomId
       );
 
@@ -44,41 +57,62 @@ io.on("connection", (socket) => {
 
     socket.join(roomId);
 
+    socket.data.roomId = roomId;
+
     console.log(
+      "JOINED:",
       socket.id,
-      "joined:",
       roomId
     );
 
-    // पहले फोन को बताओ कि दूसरा फोन आ गया
+    // Current user
+    socket.emit("room-joined", {
+      roomId: roomId,
+      users: users + 1
+    });
+
+    // अगर दूसरा phone पहले से है
     if (users === 1) {
 
+      console.log(
+        "SECOND PHONE JOINED:",
+        roomId
+      );
+
+      // पहले phone को बताओ
       socket.to(roomId).emit(
         "peer-joined"
       );
 
+      // दूसरे phone को भी बताओ
+      socket.emit(
+        "peer-ready"
+      );
     }
-
-    // दोनों फोन को room information
-    socket.emit(
-      "room-joined",
-      {
-        roomId: roomId,
-        users: users + 1
-      }
-    );
 
   });
 
 
-  // WEBRTC OFFER
+  // =========================
+  // OFFER
+  // =========================
   socket.on("offer", (data) => {
 
-    if (!data || !data.roomId) return;
+    if (
+      !data ||
+      !data.roomId ||
+      !data.offer
+    ) {
+      return;
+    }
 
-    socket.to(
+    console.log(
+      "OFFER:",
+      socket.id,
       data.roomId
-    ).emit(
+    );
+
+    socket.to(data.roomId).emit(
       "offer",
       data.offer
     );
@@ -86,14 +120,26 @@ io.on("connection", (socket) => {
   });
 
 
-  // WEBRTC ANSWER
+  // =========================
+  // ANSWER
+  // =========================
   socket.on("answer", (data) => {
 
-    if (!data || !data.roomId) return;
+    if (
+      !data ||
+      !data.roomId ||
+      !data.answer
+    ) {
+      return;
+    }
 
-    socket.to(
+    console.log(
+      "ANSWER:",
+      socket.id,
       data.roomId
-    ).emit(
+    );
+
+    socket.to(data.roomId).emit(
       "answer",
       data.answer
     );
@@ -101,14 +147,20 @@ io.on("connection", (socket) => {
   });
 
 
-  // ICE CANDIDATE
+  // =========================
+  // ICE
+  // =========================
   socket.on("ice-candidate", (data) => {
 
-    if (!data || !data.roomId) return;
+    if (
+      !data ||
+      !data.roomId ||
+      !data.candidate
+    ) {
+      return;
+    }
 
-    socket.to(
-      data.roomId
-    ).emit(
+    socket.to(data.roomId).emit(
       "ice-candidate",
       data.candidate
     );
@@ -116,14 +168,19 @@ io.on("connection", (socket) => {
   });
 
 
-  // CAMERA / MIC STATE
+  // =========================
+  // MEDIA STATE
+  // =========================
   socket.on("media-state", (data) => {
 
-    if (!data || !data.roomId) return;
+    if (
+      !data ||
+      !data.roomId
+    ) {
+      return;
+    }
 
-    socket.to(
-      data.roomId
-    ).emit(
+    socket.to(data.roomId).emit(
       "media-state",
       data.state
     );
@@ -131,11 +188,13 @@ io.on("connection", (socket) => {
   });
 
 
+  // =========================
   // DISCONNECT
+  // =========================
   socket.on("disconnect", () => {
 
     console.log(
-      "Disconnected:",
+      "DISCONNECTED:",
       socket.id
     );
 
@@ -147,14 +206,13 @@ io.on("connection", (socket) => {
 const PORT =
   process.env.PORT || 10000;
 
-
 server.listen(
   PORT,
   "0.0.0.0",
   () => {
 
     console.log(
-      `Server running on port ${PORT}`
+      "Server running on port " + PORT
     );
 
   }
