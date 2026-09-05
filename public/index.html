@@ -102,6 +102,21 @@ header{
   z-index:50;
 }
 
+#openScannerBtn{
+  position:fixed;
+  left:50%;
+  bottom:20px;
+  transform:translateX(-50%);
+  padding:11px 18px;
+  border:0;
+  border-radius:12px;
+  background:#1769e0;
+  color:#fff;
+  font-size:13px;
+  font-weight:bold;
+  z-index:50;
+}
+
 #controls{
   position:fixed;
   left:0;
@@ -221,13 +236,19 @@ header{
     font-size:10px;
   }
 
+  #openScannerBtn{
+    bottom:20px;
+  }
+
 }
 </style>
 </head>
 
 <body>
 
-<header>📹 Live Camera</header>
+<header id="header">
+📹 Live Camera
+</header>
 
 <video
   id="remoteVideo"
@@ -256,6 +277,10 @@ header{
 
 <button id="startBtn">
   🚀 Camera Start + QR
+</button>
+
+<button id="openScannerBtn">
+  📷 Scan QR
 </button>
 
 <button id="soundBtn" class="hidden">
@@ -335,6 +360,7 @@ let initiator = false;
 let pendingCandidates = [];
 let facingMode = "user";
 let scanner = null;
+let scannerRunning = false;
 
 
 /* =====================================================
@@ -343,6 +369,9 @@ let scanner = null;
 
 const startBtn =
 document.getElementById("startBtn");
+
+const openScannerBtn =
+document.getElementById("openScannerBtn");
 
 const remoteVideo =
 document.getElementById("remoteVideo");
@@ -531,6 +560,11 @@ async function startCamera(){
     );
 
 
+    openScannerBtn.classList.add(
+      "hidden"
+    );
+
+
     setStatus(
       "📷 Camera ON"
     );
@@ -595,6 +629,11 @@ async function createRoom(){
 
 
   startBtn.classList.add(
+    "hidden"
+  );
+
+
+  openScannerBtn.classList.add(
     "hidden"
   );
 
@@ -671,12 +710,20 @@ async function joinRoom(id){
 
   if(!id){
 
+    alert(
+      "QR में valid Room ID नहीं मिली।"
+    );
+
     return;
 
   }
 
 
-  roomId = id;
+  roomId =
+  String(id)
+  .trim()
+  .toUpperCase();
+
 
   initiator = false;
 
@@ -693,6 +740,11 @@ async function joinRoom(id){
 
 
   startBtn.classList.add(
+    "hidden"
+  );
+
+
+  openScannerBtn.classList.add(
     "hidden"
   );
 
@@ -1414,6 +1466,10 @@ switchBtn.addEventListener(
     }
 
 
+    const oldFacing =
+    facingMode;
+
+
     facingMode =
     facingMode === "user"
     ? "environment"
@@ -1493,55 +1549,4 @@ switchBtn.addEventListener(
       localStream;
 
 
-      await localVideo.play();
-
-
-      setStatus(
-        facingMode === "user"
-        ? "🤳 Front Camera"
-        : "📷 Back Camera"
-      );
-
-    }
-
-    catch(error){
-
-      console.error(
-        "SWITCH CAMERA ERROR:",
-        error
-      );
-
-
-      facingMode =
-      facingMode === "user"
-      ? "environment"
-      : "user";
-
-
-      alert(
-        "Camera switch नहीं हो पाया।"
-      );
-
-    }
-
-  }
-);
-
-
-/* =====================================================
-   START BUTTON
-===================================================== */
-
-startBtn.addEventListener(
-  "click",
-  async function(){
-
-    await createRoom();
-
-  }
-);
-
-
-/* =====================================================
-   STOP BUTTON
-================================
+ 
