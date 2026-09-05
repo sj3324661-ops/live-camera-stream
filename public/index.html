@@ -6,6 +6,12 @@
 
 <title>Live Camera</title>
 
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#07111f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+
 <script src="/socket.io/socket.io.js"></script>
 
 <!-- QR Library -->
@@ -464,10 +470,6 @@ function showQR(){
     url
   );
 
-  /*
-    पहले QRCode library से QR बनाने की कोशिश
-  */
-
   if(
     typeof QRCode !== "undefined"
   ){
@@ -502,11 +504,6 @@ function showQR(){
     }
 
   }else{
-
-    /*
-      अगर QR library load नहीं हुई
-      तो fallback image
-    */
 
     createQRFallback(
       qr,
@@ -642,8 +639,6 @@ async function startQRScanner(){
 
       errorMessage => {
 
-        // Scan errors ignore
-
       }
 
     );
@@ -690,7 +685,6 @@ function processQR(text){
 
   }catch(e){
 
-    // Raw room code हो सकता है
   }
 
   const clean =
@@ -1469,7 +1463,43 @@ window.addEventListener(
   }
 );
 
+
+/* =========================
+   PWA SERVICE WORKER
+========================= */
+
+if(
+  "serviceWorker" in navigator
+){
+
+  window.addEventListener(
+    "load",
+    () => {
+
+      navigator.serviceWorker
+        .register("/sw.js")
+        .then(() => {
+
+          console.log(
+            "PWA Service Worker Registered"
+          );
+
+        })
+        .catch(error => {
+
+          console.log(
+            "PWA error:",
+            error
+          );
+
+        });
+
+    }
+  );
+
+}
+
 </script>
 
 </body>
-                                      </html>
+  </html>
