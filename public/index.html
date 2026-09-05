@@ -229,7 +229,6 @@ header{
 
 <header>📹 Live Camera</header>
 
-<!-- दूसरे फोन का camera -->
 <video
   id="remoteVideo"
   autoplay
@@ -237,7 +236,6 @@ header{
   playsinline>
 </video>
 
-<!-- अपना camera -->
 <video
   id="localVideo"
   autoplay
@@ -284,11 +282,6 @@ header{
 
 </div>
 
-
-<!-- =========================
-     QR PANEL
-========================= -->
-
 <div id="qrPanel" class="hidden">
 
   <h3>📱 Phone B को QR Scan कराएं</h3>
@@ -303,12 +296,7 @@ header{
 
 </div>
 
-
-<!-- =========================
-     SCANNER PANEL
-========================= -->
-
-<div id="scannerPanel">
+<div id="scannerPanel" class="hidden">
 
   <h3>📷 QR Scan करें</h3>
 
@@ -341,17 +329,11 @@ const socket = io();
 ===================================================== */
 
 let localStream = null;
-
 let peerConnection = null;
-
 let roomId = null;
-
 let initiator = false;
-
 let pendingCandidates = [];
-
 let facingMode = "user";
-
 let scanner = null;
 
 
@@ -422,7 +404,10 @@ function setStatus(text){
 
   statusBox.innerText = text;
 
-  console.log("STATUS:",text);
+  console.log(
+    "STATUS:",
+    text
+  );
 
 }
 
@@ -431,32 +416,38 @@ function setStatus(text){
    SOCKET CONNECT
 ===================================================== */
 
-socket.on("connect",function(){
+socket.on(
+  "connect",
+  function(){
 
-  console.log(
-    "SOCKET CONNECTED:",
-    socket.id
-  );
+    console.log(
+      "SOCKET CONNECTED:",
+      socket.id
+    );
 
-  setStatus(
-    "🟢 Server connected"
-  );
+    setStatus(
+      "🟢 Server connected"
+    );
 
-});
+  }
+);
 
 
-socket.on("connect_error",function(error){
+socket.on(
+  "connect_error",
+  function(error){
 
-  console.error(
-    "SOCKET ERROR:",
-    error
-  );
+    console.error(
+      "SOCKET ERROR:",
+      error
+    );
 
-  setStatus(
-    "❌ Server connection error"
-  );
+    setStatus(
+      "❌ Server connection error"
+    );
 
-});
+  }
+);
 
 
 /* =====================================================
@@ -467,8 +458,10 @@ async function startCamera(){
 
   try{
 
-    if(!navigator.mediaDevices ||
-       !navigator.mediaDevices.getUserMedia){
+    if(
+      !navigator.mediaDevices ||
+      !navigator.mediaDevices.getUserMedia
+    ){
 
       alert(
         "यह browser camera access support नहीं करता। Chrome इस्तेमाल करें।"
@@ -605,6 +598,7 @@ async function createRoom(){
     "hidden"
   );
 
+
   scannerPanel.classList.add(
     "hidden"
   );
@@ -637,9 +631,9 @@ function showQR(){
 
 
   const qrURL =
-    window.location.origin +
-    "/?room=" +
-    encodeURIComponent(roomId);
+  window.location.origin +
+  "/?room=" +
+  encodeURIComponent(roomId);
 
 
   if(typeof QRCode === "undefined"){
@@ -769,10 +763,6 @@ function createPeer(){
   });
 
 
-  /* =================================================
-     LOCAL TRACKS
-  ================================================= */
-
   if(localStream){
 
     localStream
@@ -793,10 +783,6 @@ function createPeer(){
 
   }
 
-
-  /* =================================================
-     REMOTE TRACK
-  ================================================= */
 
   peerConnection.ontrack =
   function(event){
@@ -870,10 +856,6 @@ function createPeer(){
   };
 
 
-  /* =================================================
-     ICE CANDIDATE
-  ================================================= */
-
   peerConnection.onicecandidate =
   function(event){
 
@@ -891,10 +873,6 @@ function createPeer(){
 
   };
 
-
-  /* =================================================
-     CONNECTION STATE
-  ================================================= */
 
   peerConnection.onconnectionstatechange =
   function(){
@@ -957,10 +935,6 @@ function createPeer(){
 
   };
 
-
-  /* =================================================
-     ICE STATE
-  ================================================= */
 
   peerConnection.oniceconnectionstatechange =
   function(){
@@ -1515,9 +1489,43 @@ switchBtn.addEventListener(
       );
 
 
-/* =====================================================
-   COMPLETE BUTTON FUNCTIONS
-===================================================== */
+      localVideo.srcObject =
+      localStream;
+
+
+      await localVideo.play();
+
+
+      setStatus(
+        facingMode === "user"
+        ? "🤳 Front Camera"
+        : "📷 Back Camera"
+      );
+
+    }
+
+    catch(error){
+
+      console.error(
+        "SWITCH CAMERA ERROR:",
+        error
+      );
+
+
+      facingMode =
+      facingMode === "user"
+      ? "environment"
+      : "user";
+
+
+      alert(
+        "Camera switch नहीं हो पाया।"
+      );
+
+    }
+
+  }
+);
 
 
 /* =====================================================
@@ -1536,456 +1544,4 @@ startBtn.addEventListener(
 
 /* =====================================================
    STOP BUTTON
-===================================================== */
-
-stopBtn.addEventListener(
-  "click",
-  function(){
-
-    /* Stop camera */
-    if(localStream){
-
-      localStream
-      .getTracks()
-      .forEach(function(track){
-
-        track.stop();
-
-      });
-
-      localStream = null;
-
-    }
-
-
-    /* Close peer */
-    if(peerConnection){
-
-      peerConnection.close();
-
-      peerConnection = null;
-
-    }
-
-
-    /* Clear videos */
-    localVideo.srcObject = null;
-    remoteVideo.srcObject = null;
-
-
-    controls.classList.add(
-      "hidden"
-    );
-
-    soundBtn.classList.add(
-      "hidden"
-    );
-
-
-    waiting.classList.remove(
-      "hidden"
-    );
-
-
-    startBtn.classList.remove(
-      "hidden"
-    );
-
-
-    qrPanel.classList.add(
-      "hidden"
-    );
-
-
-    scannerPanel.classList.add(
-      "hidden"
-    );
-
-
-    cameraBtn.innerText =
-      "📷 Camera";
-
-    micBtn.innerText =
-      "🎤 Mic";
-
-
-    setStatus(
-      "🟡 Camera stopped"
-    );
-
-  }
-);
-
-
-/* =====================================================
-   CLOSE QR
-===================================================== */
-
-closeQR.addEventListener(
-  "click",
-  function(){
-
-    qrPanel.classList.add(
-      "hidden"
-    );
-
-  }
-);
-
-
-/* =====================================================
-   SOUND BUTTON
-===================================================== */
-
-soundBtn.addEventListener(
-  "click",
-  async function(){
-
-    remoteVideo.muted = false;
-
-    try{
-
-      await remoteVideo.play();
-
-      setStatus(
-        "🔊 Sound ON"
-      );
-
-      soundBtn.innerText =
-        "🔊 Sound ON";
-
-    }
-
-    catch(error){
-
-      console.error(
-        "SOUND ERROR:",
-        error
-      );
-
-      setStatus(
-        "⚠️ Sound start नहीं हुआ"
-      );
-
-    }
-
-  }
-);
-
-
-/* =====================================================
-   QR SCANNER START
-===================================================== */
-
-scanBtn.addEventListener(
-  "click",
-  async function(){
-
-    if(scanner){
-
-      return;
-
-    }
-
-
-    try{
-
-      scanner =
-      new Html5Qrcode(
-        "reader"
-      );
-
-
-      scanBtn.disabled = true;
-
-      scanBtn.innerText =
-        "📷 Scanner चल रहा है...";
-
-
-      await scanner.start(
-
-        {
-          facingMode:"environment"
-        },
-
-        {
-          fps:10,
-          qrbox:{
-            width:220,
-            height:220
-          }
-        },
-
-        async function(decodedText){
-
-          console.log(
-            "QR RESULT:",
-            decodedText
-          );
-
-
-          let scannedRoom = null;
-
-
-          /* URL से room निकालना */
-
-          try{
-
-            const url =
-            new URL(decodedText);
-
-
-            scannedRoom =
-            url.searchParams.get(
-              "room"
-            );
-
-          }
-
-          catch(error){
-
-            /* अगर direct room code है */
-
-            scannedRoom =
-            decodedText
-            .trim()
-            .toUpperCase();
-
-          }
-
-
-          if(!scannedRoom){
-
-            alert(
-              "QR में Room ID नहीं मिली।"
-            );
-
-            return;
-
-          }
-
-
-          /* Scanner बंद */
-
-          try{
-
-            await scanner.stop();
-
-          }
-
-          catch(error){
-
-            console.log(
-              "SCANNER STOP:",
-              error
-            );
-
-          }
-
-
-          scanner.clear();
-
-          scanner = null;
-
-
-          scanBtn.disabled = false;
-
-          scanBtn.innerText =
-            "📷 QR Scanner Start";
-
-
-          scannerPanel.classList.add(
-            "hidden"
-          );
-
-
-          /* Room join */
-
-          await joinRoom(
-            scannedRoom
-          );
-
-        },
-
-        function(errorMessage){
-
-          console.log(
-            "QR SCAN:",
-            errorMessage
-          );
-
-        }
-
-      );
-
-    }
-
-    catch(error){
-
-      console.error(
-        "SCANNER ERROR:",
-        error
-      );
-
-
-      scanner = null;
-
-      scanBtn.disabled = false;
-
-      scanBtn.innerText =
-        "📷 QR Scanner Start";
-
-
-      alert(
-        "Camera permission दें और फिर QR Scanner शुरू करें।"
-      );
-
-    }
-
-  }
-);
-
-
-/* =====================================================
-   CLOSE SCANNER
-===================================================== */
-
-closeScanner.addEventListener(
-  "click",
-  async function(){
-
-    if(scanner){
-
-      try{
-
-        await scanner.stop();
-
-      }
-
-      catch(error){
-
-        console.log(
-          "SCANNER CLOSE:",
-          error
-        );
-
-      }
-
-
-      try{
-
-        scanner.clear();
-
-      }
-
-      catch(error){
-
-        console.log(
-          "SCANNER CLEAR:",
-          error
-        );
-
-      }
-
-
-      scanner = null;
-
-    }
-
-
-    scanBtn.disabled = false;
-
-    scanBtn.innerText =
-      "📷 QR Scanner Start";
-
-
-    scannerPanel.classList.add(
-      "hidden"
-    );
-
-  }
-);
-
-
-/* =====================================================
-   SHOW SCANNER
-===================================================== */
-
-document.addEventListener(
-  "DOMContentLoaded",
-  function(){
-
-    /* Scanner panel को शुरू में बंद रखें */
-
-    scannerPanel.classList.add(
-      "hidden"
-    );
-
-  }
-);
-
-
-/* =====================================================
-   DOUBLE CLICK HEADER
-   Scanner खोलने के लिए
-===================================================== */
-
-document
-.querySelector("header")
-.addEventListener(
-  "dblclick",
-  function(){
-
-    scannerPanel.classList.remove(
-      "hidden"
-    );
-
-  }
-);
-
-
-/* =====================================================
-   URL ROOM AUTO JOIN
-===================================================== */
-
-(function(){
-
-  const params =
-  new URLSearchParams(
-    window.location.search
-  );
-
-
-  const room =
-  params.get("room");
-
-
-  if(room){
-
-    setTimeout(
-      async function(){
-
-        await joinRoom(
-          room
-        );
-
-      },
-      500
-    );
-
-  }
-
-})();
-
-
-/* =====================================================
-   PAGE LOAD
-===================================================== */
-
-console.log(
-  "✅ Live Camera buttons loaded"
-);
-
-setStatus(
-  "🟡 Ready"
-);      
+================================
