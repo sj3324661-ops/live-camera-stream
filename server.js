@@ -7,7 +7,8 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "*"
+    origin: "*",
+    methods: ["GET", "POST"]
   }
 });
 
@@ -26,13 +27,12 @@ io.on("connection", (socket) => {
   // =========================
   socket.on("join-room", (roomId) => {
 
+    roomId = String(roomId || "").trim().toUpperCase();
+
     if (!roomId) return;
 
-    const room =
-      io.sockets.adapter.rooms.get(roomId);
-
-    const users =
-      room ? room.size : 0;
+    const room = io.sockets.adapter.rooms.get(roomId);
+    const users = room ? room.size : 0;
 
     console.log(
       "JOIN REQUEST:",
@@ -44,34 +44,30 @@ io.on("connection", (socket) => {
 
     // Maximum 2 phones
     if (users >= 2) {
-
       socket.emit("room-full");
-
-      console.log(
-        "ROOM FULL:",
-        roomId
-      );
-
+      console.log("ROOM FULL:", roomId);
       return;
     }
 
     socket.join(roomId);
-
     socket.data.roomId = roomId;
+
+    const newUsers = users + 1;
 
     console.log(
       "JOINED:",
       socket.id,
-      roomId
+      roomId,
+      "users:",
+      newUsers
     );
 
-    // Current user
     socket.emit("room-joined", {
-      roomId: roomId,
-      users: users + 1
+      roomId,
+      users: newUsers
     });
 
-    // अगर दूसरा phone पहले से है
+    // दूसरा फोन जुड़ गया
     if (users === 1) {
 
       console.log(
@@ -79,17 +75,12 @@ io.on("connection", (socket) => {
         roomId
       );
 
-      // पहले phone को बताओ
-      socket.to(roomId).emit(
-        "peer-joined"
-      );
+      // पहले फोन को बताओ
+      socket.to(roomId).emit("peer-joined");
 
-      // दूसरे phone को भी बताओ
-      socket.emit(
-        "peer-ready"
-      );
+      // दूसरे फोन को ready बताओ
+      socket.emit("peer-ready");
     }
-
   });
 
 
@@ -98,25 +89,23 @@ io.on("connection", (socket) => {
   // =========================
   socket.on("offer", (data) => {
 
-    if (
-      !data ||
-      !data.roomId ||
-      !data.offer
-    ) {
-      return;
-    }
+    if (!data || !data.offer) return;
+
+    const roomId =
+      data.roomId ||
+      data.room;
+
+    if (!roomId) return;
 
     console.log(
       "OFFER:",
       socket.id,
-      data.roomId
+      roomId
     );
 
-    socket.to(data.roomId).emit(
-      "offer",
-      data.offer
-    );
-
+    socket.to(roomId).emit("offer", {
+      offer: data.offer
+    });
   });
 
 
@@ -125,46 +114,49 @@ io.on("connection", (socket) => {
   // =========================
   socket.on("answer", (data) => {
 
-    if (
-      !data ||
-      !data.roomId ||
-      !data.answer
-    ) {
-      return;
-    }
+    if (!data || !data.answer) return;
+
+    const roomId =
+      data.roomId ||
+      data.room;
+
+    if (!roomId) return;
 
     console.log(
       "ANSWER:",
       socket.id,
-      data.roomId
+      roomId
     );
 
-    socket.to(data.roomId).emit(
-      "answer",
-      data.answer
-    );
-
+    socket.to(roomId).emit("answer", {
+      answer: data.answer
+    });
   });
 
 
   // =========================
-  // ICE
+  // ICE CANDIDATE
   // =========================
   socket.on("ice-candidate", (data) => {
 
-    if (
-      !data ||
-      !data.roomId ||
-      !data.candidate
-    ) {
-      return;
-    }
+    if (!data || !data.candidate) return;
 
-    socket.to(data.roomId).emit(
+    const roomId =
+      data.roomId ||
+      data.room;
+
+    if (!roomId) return;
+
+    console.log(
+      "ICE:",
+      socket.id,
+      roomId
+    );
+
+    socket.to(roomId).emit(
       "ice-candidate",
       data.candidate
     );
-
   });
 
 
@@ -173,18 +165,18 @@ io.on("connection", (socket) => {
   // =========================
   socket.on("media-state", (data) => {
 
-    if (
-      !data ||
-      !data.roomId
-    ) {
-      return;
-    }
+    if (!data) return;
 
-    socket.to(data.roomId).emit(
+    const roomId =
+      data.roomId ||
+      data.room;
+
+    if (!roomId) return;
+
+    socket.to(roomId).emit(
       "media-state",
       data.state
     );
-
   });
 
 
@@ -197,7 +189,6 @@ io.on("connection", (socket) => {
       "DISCONNECTED:",
       socket.id
     );
-
   });
 
 });
